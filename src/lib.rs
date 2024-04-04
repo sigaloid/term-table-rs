@@ -55,9 +55,6 @@
 //! ╚═════════════════════════════════════════════════════════════════════════════════╝
 //!</pre>
 
-#[macro_use]
-extern crate lazy_static;
-
 pub mod row;
 pub mod table_cell;
 
