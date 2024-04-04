@@ -1,4 +1,6 @@
+#[cfg(feature = "strip_ansi")]
 use lazy_static;
+#[cfg(feature = "strip_ansi")]
 use regex::Regex;
 use std::cmp;
 use std::collections::HashSet;
@@ -129,10 +131,13 @@ impl TableCell {
     /// New line characters are taken into account.
     pub fn wrapped_content(&self, width: usize) -> Vec<String> {
         let pad_char = if self.pad_content { ' ' } else { '\0' };
+        #[cfg(feature = "strip_ansi")]
         let hidden: HashSet<usize> = STRIP_ANSI_RE
             .find_iter(&self.data)
             .flat_map(|m| m.start()..m.end())
             .collect();
+        #[cfg(not(feature = "strip_ansi"))]
+        let hidden: HashSet<usize> = HashSet::new();
         let mut res: Vec<String> = Vec::new();
         let mut buf = String::new();
         buf.push(pad_char);
@@ -223,6 +228,8 @@ impl TableCellBuilder {
     }
 }
 
+
+#[cfg(feature = "strip_ansi")]
 // Taken from https://github.com/mitsuhiko/console
 lazy_static! {
     static ref STRIP_ANSI_RE: Regex =
@@ -231,7 +238,15 @@ lazy_static! {
 }
 
 // The width of a string. Strips ansi characters
+#[cfg(feature = "strip_ansi")]
 pub fn string_width(string: &str) -> usize {
     let stripped = STRIP_ANSI_RE.replace_all(string, "");
     stripped.width()
+}
+
+// The width of a string
+#[cfg(not(feature = "strip_ansi"))]
+#[inline(always)]
+pub fn string_width(string: &str) -> usize {
+    string.width()
 }
